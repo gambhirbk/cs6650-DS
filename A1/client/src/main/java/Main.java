@@ -6,20 +6,12 @@ import java.util.concurrent.CountDownLatch;
 
 public class Main {
 
-    // create 3 threads
     private static Integer START_UP_POST_REQUESTS = 1000;
-    private static Integer SECOND_PHASE_REQUESTS = 0;
-    private static Integer THIRD_PHASE_REQUESTS = 0;
+    private static Integer SECOND_PHASE_REQUESTS = 1800;
+    private static Integer THIRD_PHASE_REQUESTS = 1500;
     private static Integer START_PHASE_THREADS =  32;
-    private static Integer SECOND_PHASE_THREADS = 0;
-    private static Integer THIRD_PHASE_THREADS = 0;
-
-//    private static Integer START_UP_POST_REQUESTS = 1000;
-//    private static Integer SECOND_PHASE_REQUESTS = 1800;
-//    private static Integer THIRD_PHASE_REQUESTS = 1500;
-//    private static Integer START_PHASE_THREADS =  32;
-//    private static Integer SECOND_PHASE_THREADS = 55;
-//    private static Integer THIRD_PHASE_THREADS = 50;
+    private static Integer SECOND_PHASE_THREADS = 55;
+    private static Integer THIRD_PHASE_THREADS = 50;
 
     private static Integer MILLISECONDS_TO_SECONDS_CONVERTER = 1000;
 
