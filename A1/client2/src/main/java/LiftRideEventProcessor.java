@@ -16,6 +16,8 @@ public class LiftRideEventProcessor extends Thread {
     private CountDownLatch latch;
     private CountDownLatch overallLatch;
 
+    private String basePath = "http://35.91.142.195:8080/server_war_exploded/";
+
     private SharedResults sharedResults;
 
     public LiftRideEventProcessor(BlockingQueue sharedQueue, CountDownLatch latch, CountDownLatch overallLatch, SharedResults sharedResults) {
@@ -31,7 +33,6 @@ public class LiftRideEventProcessor extends Thread {
         int responseCode;
         int successfulPosts = 0;
         int failedPosts = 0;
-        String basePath = "http://localhost:8080/server_war_exploded2/";
         SkiersApi apiInstance = new SkiersApi();
         ApiClient client = apiInstance.getApiClient();
         client.setBasePath(basePath);
