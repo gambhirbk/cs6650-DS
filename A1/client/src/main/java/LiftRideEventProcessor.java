@@ -15,6 +15,8 @@ public class LiftRideEventProcessor extends Thread {
 
     private SharedResults sharedResults;
 
+    private static final Integer NUMBER_OF_REQUESTS = 1000;
+
     public LiftRideEventProcessor(BlockingQueue sharedQueue, CountDownLatch latch, CountDownLatch overallLatch, SharedResults sharedResults) {
         this.sharedQueue = sharedQueue;
         this.latch = latch;
@@ -25,42 +27,54 @@ public class LiftRideEventProcessor extends Thread {
     public void run() {
         int successfulPosts = 0;
         int failedPosts = 0;
-        String basePath = "http://35.91.142.195:8080/server_war_exploded/";
+        String basePath = "http://18.237.26.221:8080/server_war/";
+//        String basePath = "http://localhost:8080/server_war_exploded/";
         SkiersApi apiInstance = new SkiersApi();
         ApiClient client = apiInstance.getApiClient();
         client.setBasePath(basePath);
+        for (int i = 0; i < NUMBER_OF_REQUESTS; i++) {
 
-        // maximum of 5 tries
-        boolean success = false;
-        int numTries = 0;
+            // maximum of 5 tries
+            boolean success = false;
+            int numTries = 0;
 
-        while (!success && numTries < MAX_RETRIES) {
-            try {
-                LiftRideEvent liftRideEvent = this.sharedQueue.take();
-                ApiResponse<Void> response = apiInstance.writeNewLiftRideWithHttpInfo(liftRideEvent.getLiftRide(), liftRideEvent.getResortID(), liftRideEvent.getSeasonID(),
-                        liftRideEvent.getDayID(), liftRideEvent.getSkierID());
-
-                if (response.getStatusCode() >= 400){
-                    sleepThread(numTries++);
-                    continue;
+            while (!success && numTries < MAX_RETRIES) {
+                try {
+                    if (Main.q.peek() == null) {
+                        break;
+                    }
+                    LiftRideEvent liftRideEvent = Main.q.take();
+                    ApiResponse<Void> response = apiInstance.writeNewLiftRideWithHttpInfo(liftRideEvent.getLiftRide(), liftRideEvent.getResortID(), liftRideEvent.getSeasonID(),
+                            liftRideEvent.getDayID(), liftRideEvent.getSkierID());
+                    System.out.println(response.getStatusCode());
+                    if (response.getStatusCode() >= 400) {
+                        sleepThread(numTries++);
+                        continue;
+                    }
+                    successfulPosts++;
+                } catch (ApiException e) {
+                    System.out.println(e.getCode());
+                    System.err.println("Exception thrown while calling SkierApi for writeNewLiftRide");
+                    System.err.println(e.getMessage());
+                    failedPosts++;
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
-                successfulPosts++;
-            } catch (ApiException | InterruptedException e) {
-                System.err.println("Exception thrown while calling SkierApi for writeNewLiftRide");
-                failedPosts++;
-                e.printStackTrace();
             }
+        }
             this.sharedResults.incrementSuccessfulPost(successfulPosts);
             this.sharedResults.incrementFailedPost(failedPosts);
 
             try {
-                this.latch.countDown();
+                if (this.latch != null) {
+                    this.latch.countDown();
+                }
                 this.overallLatch.countDown();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-    }
     private void sleepThread(Integer numTries) {
         try {
             Thread.sleep(2^numTries);

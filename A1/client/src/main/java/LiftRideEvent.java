@@ -35,4 +35,15 @@ public class LiftRideEvent {
     public Integer getSkierID() {
         return skierID;
     }
+
+    @Override
+    public String toString() {
+        return "LiftRideEvent{" +
+                "liftRide=" + liftRide +
+                ", resortID=" + resortID +
+                ", seasonID='" + seasonID + '\'' +
+                ", dayID='" + dayID + '\'' +
+                ", skierID=" + skierID +
+                '}';
+    }
 }

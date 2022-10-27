@@ -91,6 +91,7 @@ public class SkierServlet extends HttpServlet {
             Message message = new Message("string");
             response.getWriter().write(gson.toJson(message));
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            // SC_NOT_FOUND
         } else {
             response.setStatus(HttpServletResponse.SC_OK);
         }
