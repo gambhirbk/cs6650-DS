@@ -36,14 +36,10 @@ public class LiftRideEventGenerator extends Thread {
             Integer resortID = ThreadLocalRandom.current().nextInt(this.endResortID - this.startResortID) + this.startResortID;
             liftRideEvent = new LiftRideEvent(liftRide, resortID, this.SEASON_ID, DAY_ID, skierID);
             try {
-                this.sharedQueue.put(liftRideEvent);
+                Main.q.put(liftRideEvent);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
-    }
-
-    public BlockingQueue<LiftRideEvent> getSharedQueue() {
-        return sharedQueue;
     }
 }
