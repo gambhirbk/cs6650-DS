@@ -1,16 +1,68 @@
 package servlet;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import model.Message;
+import model.RequestBody;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeoutException;
 
 @WebServlet(name = "SkierServlet", urlPatterns = "/skiers/*")
 public class SkierServlet extends HttpServlet {
+
+    private BlockingQueue<Channel> pool;
+    private Connection connection;
+
+    private final Integer NUM_CHANNELS = 100;
+
+    private final String QUEUE_NAME = "liftRide";
+
+    /**
+     * Initialize the RabbitMQ Channel pool during Servlet initialization
+     *
+     * @throws ServletException when Servlet can't be initialized
+     */
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost("35.155.181.161");
+        factory.setUsername("test");
+        factory.setPassword("test");
+
+        try {
+            connection = factory.newConnection();
+        } catch (IOException | TimeoutException e) {
+            System.err.println("Unable to connect with RabbitMQ");
+            e.printStackTrace();
+        }
+
+        // blocking queue for shared pool of channels
+        pool = new LinkedBlockingQueue<>();
+        for (int i = 0; i < NUM_CHANNELS; i++){
+            try {
+                Channel channel = connection.createChannel();
+                channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+                pool.add(channel);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     private Gson gson = new Gson();
     private String msg;
@@ -20,6 +72,14 @@ public class SkierServlet extends HttpServlet {
     private final String SKIERS_PARAMETER = "skiers";
     private final int DAY_ID_MIN = 1;
     private final int DAY_ID_MAX = 365;
+
+    private final int LIFT_ID_MIN = 1;
+
+    private final int LIFT_ID_MAX = 40;
+
+    private final int TIME_MIN = 1;
+
+    private final int TIME_MAX = 360;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
@@ -57,8 +117,10 @@ public class SkierServlet extends HttpServlet {
         if (urlPath == null || urlPath.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             response.getWriter().write("missing parameter");
+            return;
         }
 
+        JsonObject body = gson.fromJson(request.getReader(), JsonObject.class);
         String[] urlParts = urlPath.split("/");
 
         // and now validate url path and return the response status code
@@ -91,6 +153,26 @@ public class SkierServlet extends HttpServlet {
             Message message = new Message("string");
             response.getWriter().write(gson.toJson(message));
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
+            // check if parameters are valid in the request
+            if (!isValidRequestBody(body, response)) return;
+
+            Integer skierID = Integer.parseInt(urlParts[7]);
+            JsonObject mesg = createMessageToSendQueue(body, skierID);
+
+            try {
+                Channel channel = pool.take();
+                channel.basicPublish("", QUEUE_NAME, null, gson.toJson(message).getBytes());
+                System.out.println(" Sent '" + message + "'");
+
+                response.setStatus(HttpServletResponse.SC_CREATED);
+                response.getWriter().write("LiftRide event created");
+
+                pool.add(channel);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
         } else {
             response.setStatus(HttpServletResponse.SC_OK);
         }
@@ -113,5 +195,33 @@ public class SkierServlet extends HttpServlet {
             }
         }
         return false;
+    }
+
+    private JsonObject createMessageToSendQueue(JsonObject body, Integer skierID){
+        JsonObject mesg = new JsonObject();
+        mesg.add("time", body.get("time"));
+        mesg.add("liftID", body.get("liftID"));
+        mesg.add("skierID", new JsonPrimitive(skierID));
+
+        return mesg;
+    }
+
+    private boolean isValidRequestBody(JsonObject body, HttpServletResponse response) throws IOException {
+        HashMap<String, RequestBody> parameters = new HashMap<>();
+        parameters.put("time", new RequestBody("time", null, TIME_MIN, TIME_MAX));
+        parameters.put("liftID", new RequestBody("liftID", null, LIFT_ID_MIN, LIFT_ID_MAX));
+
+        for (String param: parameters.keySet()){
+            JsonElement val = body.get(param);
+            RequestBody bodyParam = parameters.get(param);
+
+            if (val == null){
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write(param + "is missing");
+                return false;
+            }
+            if (! bodyParam.isValidValue(response)) return false;
+        }
+        return true;
     }
 }
