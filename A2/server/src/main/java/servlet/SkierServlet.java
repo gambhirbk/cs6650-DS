@@ -40,7 +40,7 @@ public class SkierServlet extends HttpServlet {
     public void init() throws ServletException {
         super.init();
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("35.155.181.161");
+        factory.setHost("34.219.154.208");
         factory.setUsername("test");
         factory.setPassword("test");
 
@@ -63,7 +63,6 @@ public class SkierServlet extends HttpServlet {
             }
         }
     }
-
     private Gson gson = new Gson();
     private String msg;
 
@@ -72,15 +71,10 @@ public class SkierServlet extends HttpServlet {
     private final String SKIERS_PARAMETER = "skiers";
     private final int DAY_ID_MIN = 1;
     private final int DAY_ID_MAX = 365;
-
     private final int LIFT_ID_MIN = 1;
-
     private final int LIFT_ID_MAX = 40;
-
     private final int TIME_MIN = 1;
-
     private final int TIME_MAX = 360;
-
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         res.setContentType("text/plain");
@@ -149,7 +143,7 @@ public class SkierServlet extends HttpServlet {
             }
         }
 
-        if (!isUrlValid(urlParts, request)) {
+        if (isUrlValid(urlParts, request)) {
             Message message = new Message("string");
             response.getWriter().write(gson.toJson(message));
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -172,7 +166,6 @@ public class SkierServlet extends HttpServlet {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
         } else {
             response.setStatus(HttpServletResponse.SC_OK);
         }
@@ -202,7 +195,6 @@ public class SkierServlet extends HttpServlet {
         mesg.add("time", body.get("time"));
         mesg.add("liftID", body.get("liftID"));
         mesg.add("skierID", new JsonPrimitive(skierID));
-
         return mesg;
     }
 
@@ -214,6 +206,7 @@ public class SkierServlet extends HttpServlet {
         for (String param: parameters.keySet()){
             JsonElement val = body.get(param);
             RequestBody bodyParam = parameters.get(param);
+            bodyParam.setValue(val.getAsString());
 
             if (val == null){
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
