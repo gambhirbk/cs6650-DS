@@ -7,12 +7,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class Main {
 
+//    private static Integer TOTAL_REQUESTS = 10;
+//    private static Integer START_PHASE_THREADS =  1;
+//    private static Integer SECOND_PHASE_THREADS = 1;
+//    private static Integer MILLISECONDS_TO_SECONDS_CONVERTER = 1;
+
     private static Integer TOTAL_REQUESTS = 200000;
     private static Integer START_PHASE_THREADS =  32;
     private static Integer SECOND_PHASE_THREADS = 168;
-
     private static Integer MILLISECONDS_TO_SECONDS_CONVERTER = 1000;
-
     protected static BlockingQueue<LiftRideEvent> q = new LinkedBlockingQueue<>();
 
     public static void main(String[] args) throws InterruptedException {
@@ -36,7 +39,6 @@ public class Main {
             System.out.println("Number of failed posts: " + results.getFailedPosts());
             System.out.println("Wall time: " + wallTime + "ms");
             System.out.println("throughput: " + throughput);
-
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

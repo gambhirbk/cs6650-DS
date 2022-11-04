@@ -1,5 +1,4 @@
 package servlet;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -9,7 +8,6 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import model.Message;
 import model.RequestBody;
-
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
@@ -40,7 +38,7 @@ public class SkierServlet extends HttpServlet {
     public void init() throws ServletException {
         super.init();
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("34.219.154.208");
+        factory.setHost("54.201.103.243");
         factory.setUsername("test");
         factory.setPassword("test");
 
@@ -65,7 +63,6 @@ public class SkierServlet extends HttpServlet {
     }
     private Gson gson = new Gson();
     private String msg;
-
     private final String SEASONS_PARAMETER = "seasons";
     private final String DAYS_PARAMETER = "days";
     private final String SKIERS_PARAMETER = "skiers";
@@ -144,20 +141,18 @@ public class SkierServlet extends HttpServlet {
         }
 
         if (isUrlValid(urlParts, request)) {
-            Message message = new Message("string");
-            response.getWriter().write(gson.toJson(message));
+            Integer skierID = Integer.parseInt(urlParts[7]);
+            JsonObject mesg = createMessageToSendQueue(body, skierID);
+            response.getWriter().write(gson.toJson(mesg));
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 
             // check if parameters are valid in the request
             if (!isValidRequestBody(body, response)) return;
 
-            Integer skierID = Integer.parseInt(urlParts[7]);
-            JsonObject mesg = createMessageToSendQueue(body, skierID);
-
             try {
                 Channel channel = pool.take();
-                channel.basicPublish("", QUEUE_NAME, null, gson.toJson(message).getBytes());
-                System.out.println(" Sent '" + message + "'");
+                channel.basicPublish("", QUEUE_NAME, null, gson.toJson(mesg).getBytes());
+                System.out.println(" Sent '" + mesg + "'");
 
                 response.setStatus(HttpServletResponse.SC_CREATED);
                 response.getWriter().write("LiftRide event created");
@@ -197,7 +192,6 @@ public class SkierServlet extends HttpServlet {
         mesg.add("skierID", new JsonPrimitive(skierID));
         return mesg;
     }
-
     private boolean isValidRequestBody(JsonObject body, HttpServletResponse response) throws IOException {
         HashMap<String, RequestBody> parameters = new HashMap<>();
         parameters.put("time", new RequestBody("time", null, TIME_MIN, TIME_MAX));
@@ -213,7 +207,7 @@ public class SkierServlet extends HttpServlet {
                 response.getWriter().write(param + "is missing");
                 return false;
             }
-            if (! bodyParam.isValidValue(response)) return false;
+            if (!bodyParam.isValidValue(response)) return false;
         }
         return true;
     }

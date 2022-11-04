@@ -16,22 +16,11 @@ public class RequestBody {
         this.upperRange = upperRange;
     }
 
-    public String getParameterName() {
-        return parameterName;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
     public void setValue(String val) {
         this.value = val;
     }
-
-
     public boolean isValidValue(HttpServletResponse response) throws IOException{
         // convert the value into integer
-
         try {
             Integer val = Integer.parseInt(value);
             boolean rangeCheck = (val >= lowerRange && val < upperRange);
