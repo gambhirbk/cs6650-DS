@@ -2,7 +2,6 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.Protocol;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -12,13 +11,13 @@ import java.util.concurrent.TimeoutException;
     public class Consumer {
     protected final static String QUEUE_NAME = "liftRide";
 
-    private final static String EC2_REDIS_HOST = "54.185.100.178";
+    private final static String EC2_REDIS_HOST = "34.219.33.78";
 
     protected static final JedisPool pool = new JedisPool(buildPoolConfig(), EC2_REDIS_HOST, 6379);
-    private final static Integer MAX_THREADS = 32;
+    private final static Integer MAX_THREADS = 120;
     public static void main(String[] args) throws IOException, TimeoutException, InterruptedException {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("34.212.34.136");
+        factory.setHost("34.220.195.214");
         factory.setUsername("test");
         factory.setPassword("test");
 

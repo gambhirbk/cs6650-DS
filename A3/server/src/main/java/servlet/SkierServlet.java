@@ -38,7 +38,7 @@ public class SkierServlet extends HttpServlet {
     public void init() throws ServletException {
         super.init();
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("34.212.34.136");
+        factory.setHost("34.220.195.214");
         factory.setUsername("test");
         factory.setPassword("test");
 
@@ -143,7 +143,6 @@ public class SkierServlet extends HttpServlet {
         if (isUrlValid(urlParts, request)) {
             Integer skierID = Integer.parseInt(urlParts[7]);
             Integer resortID = Integer.parseInt(urlParts[1]);
-            // TODO: dayID validation [1-365]
             Integer dayID = Integer.parseInt(urlParts[5]);
             String seasonID = urlParts[3];
             JsonObject mesg = createMessageToSendQueue(body, skierID, resortID, dayID, seasonID);
@@ -177,8 +176,8 @@ public class SkierServlet extends HttpServlet {
                     Integer.parseInt(urlPath[i]);
                 }
                 return (urlPath[3].length() == 4
-                        && Integer.valueOf(urlPath[5]) >= DAY_ID_MIN
-                        && Integer.valueOf(urlPath[5]) < DAY_ID_MAX
+                        && Integer.parseInt(urlPath[5]) >= DAY_ID_MIN
+                        && Integer.parseInt(urlPath[5]) < DAY_ID_MAX
                         && urlPath[2].equals(SEASONS_PARAMETER)
                         && urlPath[4].equals(DAYS_PARAMETER)
                         && urlPath[6].equals(SKIERS_PARAMETER));

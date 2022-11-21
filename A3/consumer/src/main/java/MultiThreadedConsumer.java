@@ -39,7 +39,7 @@ public class MultiThreadedConsumer implements Runnable {
                 }
 
                 // extract skier id
-                Integer skierID = null;
+                Integer skierID;
                 String resortID;
                 String dayID;
                 String key;
@@ -49,6 +49,7 @@ public class MultiThreadedConsumer implements Runnable {
                     dayID = requestBody.get("dayID").getAsString();
                     valueData.add("liftID", requestBody.get("liftID"));
                     valueData.add("dayID", requestBody.get("dayID"));
+                    valueData.add("seasonID", requestBody.get("seasonID"));
 
                     // question 4
                     resortID = requestBody.get("resortID").getAsString();
