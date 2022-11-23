@@ -27,8 +27,8 @@ public class LiftRideEventProcessor extends Thread {
     public void run() {
         int successfulPosts = 0;
         int failedPosts = 0;
-//        String basePath = "http://34.208.77.161:8080/server_war/";
-        String basePath = "http://localhost:8080/server_war_exploded/";
+        String basePath = "http://35.160.218.179:8080/server_war/";
+//        String basePath = "http://localhost:8080/server_war_exploded/";
         SkiersApi apiInstance = new SkiersApi();
         ApiClient client = apiInstance.getApiClient();
         client.setBasePath(basePath);

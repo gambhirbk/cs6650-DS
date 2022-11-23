@@ -23,8 +23,8 @@ public class MultiThreadedConsumer implements Runnable {
         try {
             final Channel channel = connection.createChannel();
             channel.queueDeclare(queue, false, false, false, null);
-            System.out.println(channel);
-            System.out.println("Thread "+ Thread.currentThread().getId() + " waiting for messages");
+//            System.out.println(channel);
+//            System.out.println("Thread "+ Thread.currentThread().getId() + " waiting for messages");
 
             final DeliverCallback deliverCallback = (consumerTag, delivery) -> {
                 String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
@@ -54,7 +54,7 @@ public class MultiThreadedConsumer implements Runnable {
                     // question 4
                     resortID = requestBody.get("resortID").getAsString();
                     key = resortID +"_"+ dayID;
-                    System.out.println(key);
+//                    System.out.println(key);
                 } catch (NumberFormatException e) {
                     e.printStackTrace();
                     return;
@@ -70,7 +70,7 @@ public class MultiThreadedConsumer implements Runnable {
                     return;
                 }
 
-                System.out.println("Thread " + Thread.currentThread().getId() + " received'");
+//                System.out.println("Thread " + Thread.currentThread().getId() + " received'");
                 channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 
                 // question 1: "For skier N, how many days have they skied this season?"

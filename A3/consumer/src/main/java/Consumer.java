@@ -11,13 +11,13 @@ import java.util.concurrent.TimeoutException;
     public class Consumer {
     protected final static String QUEUE_NAME = "liftRide";
 
-    private final static String EC2_REDIS_HOST = "34.219.33.78";
+    private final static String EC2_REDIS_HOST = "35.93.76.176";
 
     protected static final JedisPool pool = new JedisPool(buildPoolConfig(), EC2_REDIS_HOST, 6379);
-    private final static Integer MAX_THREADS = 120;
+    private final static Integer MAX_THREADS = 148;
     public static void main(String[] args) throws IOException, TimeoutException, InterruptedException {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("34.220.195.214");
+        factory.setHost("34.217.103.121");
         factory.setUsername("test");
         factory.setPassword("test");
 
@@ -33,8 +33,8 @@ import java.util.concurrent.TimeoutException;
 
     private static JedisPoolConfig buildPoolConfig() {
         JedisPoolConfig poolConfig = new JedisPoolConfig();
-        poolConfig.setMaxTotal(150);
-        poolConfig.setMaxWait(Duration.ofMillis(3000));
+        poolConfig.setMaxTotal(148);
+        poolConfig.setMaxWait(Duration.ofMillis(2000));
         poolConfig.setBlockWhenExhausted(true);
         poolConfig.setTestOnBorrow(true);
         return poolConfig;

@@ -14,7 +14,11 @@ public class LiftRideEventGenerator extends Thread {
     private static Integer startTime = 1;
     private static Integer endTime = 360;
     private static final String SEASON_ID = "2022";
-    private static String DAY_ID = "7";
+
+    private static Integer startDay = 1;
+
+    private static Integer endDay = 365;
+//    private static String DAY_ID = "7";
 
     private LiftRideEvent liftRideEvent;
 
@@ -34,7 +38,8 @@ public class LiftRideEventGenerator extends Thread {
             liftRide.liftID(ThreadLocalRandom.current().nextInt(this.endLiftID - this.startLiftID) + this.startLiftID);
             Integer skierID = ThreadLocalRandom.current().nextInt(this.endSkierID - this.startSkierID) + this.startSkierID;
             Integer resortID = ThreadLocalRandom.current().nextInt(this.endResortID - this.startResortID) + this.startResortID;
-            liftRideEvent = new LiftRideEvent(liftRide, resortID, this.SEASON_ID, DAY_ID, skierID);
+            Integer dayID = ThreadLocalRandom.current().nextInt( this.endDay - this.startDay) + this.startDay;
+            liftRideEvent = new LiftRideEvent(liftRide, resortID, this.SEASON_ID, String.valueOf(dayID), skierID);
             try {
                 Main.q.put(liftRideEvent);
             } catch (InterruptedException e) {
