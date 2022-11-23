@@ -26,7 +26,8 @@ public class SkierServlet extends HttpServlet {
 
     private final Integer NUM_CHANNELS = 100;
 
-    private final String QUEUE_NAME = "liftRide";
+    private final String EXCHANGE_NAME = "liftRide";
+    private final String POST_ROUTING_KEY = "liftRide.*";
 
     /**
      * Initialize the RabbitMQ Channel pool during Servlet initialization
@@ -38,7 +39,7 @@ public class SkierServlet extends HttpServlet {
     public void init() throws ServletException {
         super.init();
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("34.217.103.121");
+        factory.setHost("35.155.135.229");
         factory.setUsername("test");
         factory.setPassword("test");
 
@@ -53,8 +54,8 @@ public class SkierServlet extends HttpServlet {
         pool = new LinkedBlockingQueue<>();
         for (int i = 0; i < NUM_CHANNELS; i++){
             try {
-                Channel channel = connection.createChannel();
-                channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+                Channel channel = connection.createChannel();;
+                channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
                 pool.add(channel);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -154,7 +155,7 @@ public class SkierServlet extends HttpServlet {
 
             try {
                 Channel channel = pool.take();
-                channel.basicPublish("", QUEUE_NAME, null, gson.toJson(mesg).getBytes());
+                channel.basicPublish(EXCHANGE_NAME, "", null, gson.toJson(mesg).getBytes());
                 System.out.println(" Sent '" + mesg + "'");
 
                 response.setStatus(HttpServletResponse.SC_CREATED);

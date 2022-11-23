@@ -1,3 +1,4 @@
+import com.google.common.util.concurrent.RateLimiter;
 import io.swagger.client.model.LiftRide;
 
 import java.util.concurrent.BlockingQueue;
@@ -30,8 +31,11 @@ public class LiftRideEventGenerator extends Thread {
         this.numPostRequests = numPostRequests;
     }
 
+//    final RateLimiter rateLimiter = RateLimiter.create(20000.0);
+
     @Override
     public void run() {
+//        rateLimiter.acquire();
         for (int i = 0; i < this.numPostRequests; i++){
             LiftRide liftRide = new LiftRide();
             liftRide.time(ThreadLocalRandom.current().nextInt(this.endTime - this.startTime) + this.startTime);

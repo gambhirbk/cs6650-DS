@@ -2,9 +2,11 @@ import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
 import io.swagger.client.ApiResponse;
 import io.swagger.client.api.SkiersApi;
+import org.apache.commons.lang3.concurrent.EventCountCircuitBreaker;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class LiftRideEventProcessor extends Thread {
 
@@ -24,44 +26,51 @@ public class LiftRideEventProcessor extends Thread {
         this.sharedResults = sharedResults;
     }
 
+//    EventCountCircuitBreaker breaker = new EventCountCircuitBreaker(1000, 1, TimeUnit.MINUTES, 800);
+
     public void run() {
         int successfulPosts = 0;
         int failedPosts = 0;
-        String basePath = "http://35.160.218.179:8080/server_war/";
+        String basePath = "http://34.210.42.70:8080/server_war/";
 //        String basePath = "http://localhost:8080/server_war_exploded/";
         SkiersApi apiInstance = new SkiersApi();
         ApiClient client = apiInstance.getApiClient();
         client.setBasePath(basePath);
         for (int i = 0; i < NUMBER_OF_REQUESTS; i++) {
 
-            // maximum of 5 tries
-            boolean success = false;
-            int numTries = 0;
+//            if (breaker.incrementAndCheckState()) {
 
-            while (!success && numTries < MAX_RETRIES) {
-                try {
-                    if (Main.q.peek() == null) {
-                        break;
+                // maximum of 5 tries
+                boolean success = false;
+                int numTries = 0;
+
+                while (!success && numTries < MAX_RETRIES) {
+                    try {
+                        if (Main.q.peek() == null) {
+                            break;
+                        }
+                        LiftRideEvent liftRideEvent = Main.q.take();
+                        ApiResponse<Void> response = apiInstance.writeNewLiftRideWithHttpInfo(liftRideEvent.getLiftRide(), liftRideEvent.getResortID(), liftRideEvent.getSeasonID(),
+                                liftRideEvent.getDayID(), liftRideEvent.getSkierID());
+                        System.out.println(response.getStatusCode());
+                        if (response.getStatusCode() >= 400) {
+                            sleepThread(numTries++);
+                            continue;
+                        }
+                        successfulPosts++;
+                    } catch (ApiException e) {
+                        System.out.println(e.getCode());
+                        System.err.println("Exception thrown while calling SkierApi for writeNewLiftRide");
+                        System.err.println(e.getMessage());
+                        failedPosts++;
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
                     }
-                    LiftRideEvent liftRideEvent = Main.q.take();
-                    ApiResponse<Void> response = apiInstance.writeNewLiftRideWithHttpInfo(liftRideEvent.getLiftRide(), liftRideEvent.getResortID(), liftRideEvent.getSeasonID(),
-                            liftRideEvent.getDayID(), liftRideEvent.getSkierID());
-                    System.out.println(response.getStatusCode());
-                    if (response.getStatusCode() >= 400) {
-                        sleepThread(numTries++);
-                        continue;
-                    }
-                    successfulPosts++;
-                } catch (ApiException e) {
-                    System.out.println(e.getCode());
-                    System.err.println("Exception thrown while calling SkierApi for writeNewLiftRide");
-                    System.err.println(e.getMessage());
-                    failedPosts++;
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
                 }
-            }
+//            } else {
+//                System.err.println("-1");
+//            }
         }
             this.sharedResults.incrementSuccessfulPost(successfulPosts);
             this.sharedResults.incrementFailedPost(failedPosts);
