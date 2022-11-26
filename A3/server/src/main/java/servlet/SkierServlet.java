@@ -13,6 +13,7 @@ import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -27,7 +28,6 @@ public class SkierServlet extends HttpServlet {
     private final Integer NUM_CHANNELS = 100;
 
     private final String EXCHANGE_NAME = "liftRide";
-    private final String POST_ROUTING_KEY = "liftRide.*";
 
     /**
      * Initialize the RabbitMQ Channel pool during Servlet initialization
@@ -39,7 +39,7 @@ public class SkierServlet extends HttpServlet {
     public void init() throws ServletException {
         super.init();
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("35.155.135.229");
+        factory.setHost("52.13.7.60");
         factory.setUsername("test");
         factory.setPassword("test");
 
@@ -155,7 +155,7 @@ public class SkierServlet extends HttpServlet {
 
             try {
                 Channel channel = pool.take();
-                channel.basicPublish(EXCHANGE_NAME, "", null, gson.toJson(mesg).getBytes());
+                channel.basicPublish(EXCHANGE_NAME, "", null, gson.toJson(mesg).getBytes(StandardCharsets.UTF_8));
                 System.out.println(" Sent '" + mesg + "'");
 
                 response.setStatus(HttpServletResponse.SC_CREATED);

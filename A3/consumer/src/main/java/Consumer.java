@@ -2,6 +2,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Protocol;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -10,14 +11,11 @@ import java.util.concurrent.TimeoutException;
 
     public class Consumer {
     protected final static String EXCHANGE_NAME = "liftRide";
-
-    private final static String EC2_REDIS_HOST = "35.92.114.253";
-
-    protected static final JedisPool pool = new JedisPool(buildPoolConfig(), EC2_REDIS_HOST, 6379);
-    private final static Integer MAX_THREADS = 148;
+    protected static final JedisPool pool = new JedisPool(buildPoolConfig(), Protocol.DEFAULT_HOST, 6379);
+    private final static Integer MAX_THREADS = 128;
     public static void main(String[] args) throws IOException, TimeoutException, InterruptedException {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("35.155.135.229");
+        factory.setHost("52.13.7.60");
         factory.setUsername("test");
         factory.setPassword("test");
 
@@ -30,10 +28,9 @@ import java.util.concurrent.TimeoutException;
         }
         latch.await();
     }
-
     private static JedisPoolConfig buildPoolConfig() {
         JedisPoolConfig poolConfig = new JedisPoolConfig();
-        poolConfig.setMaxTotal(148);
+        poolConfig.setMaxTotal(128);
         poolConfig.setMaxWait(Duration.ofMillis(2000));
         poolConfig.setBlockWhenExhausted(true);
         poolConfig.setTestOnBorrow(true);

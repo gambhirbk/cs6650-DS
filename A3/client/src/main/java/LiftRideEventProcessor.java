@@ -26,19 +26,19 @@ public class LiftRideEventProcessor extends Thread {
         this.sharedResults = sharedResults;
     }
 
-//    EventCountCircuitBreaker breaker = new EventCountCircuitBreaker(1000, 1, TimeUnit.MINUTES, 800);
+    EventCountCircuitBreaker breaker = new EventCountCircuitBreaker(1000, 1, TimeUnit.MINUTES, 800);
 
     public void run() {
         int successfulPosts = 0;
         int failedPosts = 0;
-        String basePath = "http://34.210.42.70:8080/server_war/";
-//        String basePath = "http://localhost:8080/server_war_exploded/";
+        String basePath = "http://ds-hw2-load-balancer-1559362f763ddc4f.elb.us-west-2.amazonaws.com:8080/server_war/";
+//      String basePath = "http://localhost:8080/server_war_exploded/";
         SkiersApi apiInstance = new SkiersApi();
         ApiClient client = apiInstance.getApiClient();
         client.setBasePath(basePath);
         for (int i = 0; i < NUMBER_OF_REQUESTS; i++) {
 
-//            if (breaker.incrementAndCheckState()) {
+            if (breaker.incrementAndCheckState()) {
 
                 // maximum of 5 tries
                 boolean success = false;
@@ -68,9 +68,9 @@ public class LiftRideEventProcessor extends Thread {
                         throw new RuntimeException(e);
                     }
                 }
-//            } else {
-//                System.err.println("-1");
-//            }
+            } else {
+                System.err.println("-1");
+            }
         }
             this.sharedResults.incrementSuccessfulPost(successfulPosts);
             this.sharedResults.incrementFailedPost(failedPosts);
